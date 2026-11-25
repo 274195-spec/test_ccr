@@ -183,6 +183,7 @@
     let currentTrialIndex = 0;
     let patientData = {};
     let userAnswers = {};
+    let testStartTime = null;
 
     // Funkcja losująca unikalne pary (bez powtórzeń) z losową kolejnością A/B
 function generateRandomTrials(count) {
@@ -229,7 +230,7 @@ function generateRandomTrials(count) {
 
         document.getElementById('step-patient').classList.add('hidden');
         document.getElementById('step-test').classList.remove('hidden');
-
+        testStartTime = Date.now();
         loadTrial();
     }
 
@@ -293,11 +294,14 @@ function generateRandomTrials(count) {
     }
 
     async function finishTest() {
-        const finalResult = {
-            patient: patientData,
-            timestamp: new Date().toISOString(),
-            results: userAnswers
-        };
+        const durationSeconds = Math.round((Date.now() - testStartTime) / 1000);
+
+const finalResult = {
+    patient: patientData,
+    timestamp: new Date().toISOString(),
+    durationSeconds: durationSeconds,
+    results: userAnswers
+};
 
         const container = document.getElementById('question-container');
         container.innerHTML = `<h2>Wysyłanie wyników...</h2><p>Proszę chwilę poczekać.</p>`;
