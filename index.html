@@ -152,7 +152,7 @@
     // =========================================================================
     // 1. KONFIGURACJA WYSYŁKI (LINK Z GOOGLE APPS SCRIPT)
     // =========================================================================
-    const ENDPOINT_URL = "https://script.google.com/macros/s/TWOJ_DLUGI_ID/exec";
+    const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxFbUdGtjMDefrcS67lG9P0_a5M5hbdXJREQ9lCQrWlh7hIc6VzZupd8jhquTjlL58/exec";
 
     // =========================================================================
     // 2. LICZBA PYTAŃ (PAR) W TEŚCIE  <--- TUTAJ ZMIENIASZ LICZBĘ PYTAŃ
@@ -311,6 +311,7 @@ const finalResult = {
         try {
             const response = await fetch(ENDPOINT_URL, {
                 method: "POST",
+                redirect: "follow",
                 headers: {
                     "Content-Type": "text/plain;charset=utf-8"
                 },
