@@ -184,27 +184,36 @@
     let patientData = {};
     let userAnswers = {};
 
-    // Funkcja losująca pary dwóch RÓŻNYCH próbek
-    function generateRandomTrials(count) {
-        const trials = [];
-        for (let i = 0; i < count; i++) {
-            const idxA = Math.floor(Math.random() * audioSamples.length);
-            let idxB = Math.floor(Math.random() * audioSamples.length);
-
-            // Zabezpieczenie: losuj drugą próbkę tak długo, aż będzie inna niż pierwsza
-            while (idxB === idxA) {
-                idxB = Math.floor(Math.random() * audioSamples.length);
-            }
-
-            trials.push({
-                id: i + 1,
-                refAudio: audioSamples[idxA],
-                testAudio: audioSamples[idxB],
-                description: `Para ${i + 1}`
-            });
+    // Funkcja losująca unikalne pary (bez powtórzeń) z losową kolejnością A/B
+function generateRandomTrials(count) {
+    // 1. Utwórz wszystkie unikalne pary (A, B)
+    const allPairs = [];
+    for (let i = 0; i < audioSamples.length; i++) {
+        for (let j = i + 1; j < audioSamples.length; j++) {
+            allPairs.push([audioSamples[i], audioSamples[j]]);
         }
-        return trials;
     }
+
+    // 2. Przetasuj pary (algorytm Fisher-Yates)
+    for (let i = allPairs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allPairs[i], allPairs[j]] = [allPairs[j], allPairs[i]];
+    }
+
+    // 3. Wybierz potrzebną liczbę par (nie więcej niż dostępna pula)
+    const selectedPairs = allPairs.slice(0, Math.min(count, allPairs.length));
+
+    // 4. Zbuduj pytania z losową kolejnością (A vs B lub B vs A)
+    return selectedPairs.map((pair, index) => {
+        const swap = Math.random() < 0.5;
+        return {
+            id: index + 1,
+            refAudio: swap ? pair[1] : pair[0],
+            testAudio: swap ? pair[0] : pair[1],
+            description: `Para ${index + 1}`
+        };
+    });
+}
 
     function startTest(event) {
         event.preventDefault();
