@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subiektywny Test Jakości Dźwięku - CCR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .hidden {
+            display: none;
+        }
+        .audio-player-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .scale-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .scale-option {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .scale-option:hover {
+            background-color: #f1f8ff;
+        }
+        .scale-option input {
+            margin-right: 15px;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .status-msg {
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .status-ok { background-color: #d4edda; color: #155724; }
+        .status-err { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- KROK 1: INFORMACJE O PACJENCIE / BADANYM -->
+    <div id="step-patient">
+        <h2>Informacje o badanym</h2>
+        <form id="patient-form" onsubmit="startTest(event)">
+            <div class="form-group">
+                <label for="patient-id">ID / Inicjały badanego:</label>
+                <input type="text" id="patient-id" required placeholder="np. PACJENT_01">
+            </div>
+            <div class="form-group">
+                <label for="patient-age">Wiek:</label>
+                <input type="number" id="patient-age" min="1" max="120" required placeholder="np. 25">
+            </div>
+            <div class="form-group">
+                <label for="patient-hearing">Stan słuchu:</label>
+                <select id="patient-hearing" required>
+                    <option value="">-- Wybierz --</option>
+                    <option value="norma">Norma słuchu</option>
+                    <option value="ubytek">Ubytek słuchu</option>
+                    <option value="nieznany">Nieznany</option>
+                </select>
+            </div>
+            <!-- NOWE POLE: WYKSZTAŁCENIE MUZYCZNE -->
+            <div class="form-group">
+                <label for="patient-music">Wykształcenie / doświadczenie muzyczne:</label>
+                <select id="patient-music" required>
+                    <option value="">-- Wybierz --</option>
+                    <option value="brak">Brak wykształcenia muzycznego</option>
+                    <option value="amator">Amator (gra na instrumencie / śpiew bez szkoły)</option>
+                    <option value="szkola_1_st">Szkoła muzyczna I stopnia</option>
+                    <option value="szkola_2_st">Szkoła muzyczna II stopnia</option>
+                    <option value="wyzsze">Wyższe muzyczne / zawodowy muzyk / realizator dźwięku</option>
+                </select>
+            </div>
+            <button type="submit">Rozpocznij Test</button>
+        </form>
+    </div>
+
+    <!-- KROK 2: WŁAŚCIWY TEST CCR -->
+    <div id="step-test" class="hidden">
+        <h2>Test CCR (Comparison Category Rating)</h2>
+        <p>Przesłuchaj próbkę referencyjną oraz testową, a następnie oceń jakość próbki testowej względem referencji.</p>
+        
+        <div id="question-container"></div>
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // 1. KONFIGURACJA WYSYŁKI (LINK Z GOOGLE APPS SCRIPT)
+    // =========================================================================
+    const ENDPOINT_URL = "https://script.google.com/macros/s/TWOJ_DLUGI_ID/exec";
+
+    // =========================================================================
+    // 2. LICZBA PYTAŃ (PAR) W TEŚCIE  <--- TUTAJ ZMIENIASZ LICZBĘ PYTAŃ
+    // =========================================================================
+    const NUMBER_OF_QUESTIONS = 3;
+
+    // =========================================================================
+    // 3. BAZA 14 POJEDYNCZYCH PRÓBEK DŹWIĘKOWYCH
+    // =========================================================================
+    const audioSamples = [
+        "audio/sample_01.wav",
+        "audio/sample_02.wav",
+        "audio/sample_03.wav",
+        "audio/sample_04.wav",
+        "audio/sample_05.wav",
+        "audio/sample_06.wav",
+        "audio/sample_07.wav",
+        "audio/sample_08.wav",
+        "audio/sample_09.wav",
+        "audio/sample_10.wav",
+        "audio/sample_11.wav",
+        "audio/sample_12.wav",
+        "audio/sample_13.wav",
+        "audio/sample_14.wav"
+    ];
+
+    let testTrials = [];
+    let currentTrialIndex = 0;
+    let patientData = {};
+    let userAnswers = {};
+
+    // Funkcja losująca pary dwóch RÓŻNYCH próbek
+    function generateRandomTrials(count) {
+        const trials = [];
+        for (let i = 0; i < count; i++) {
+            const idxA = Math.floor(Math.random() * audioSamples.length);
+            let idxB = Math.floor(Math.random() * audioSamples.length);
+
+            // Zabezpieczenie: losuj drugą próbkę tak długo, aż będzie inna niż pierwsza
+            while (idxB === idxA) {
+                idxB = Math.floor(Math.random() * audioSamples.length);
+            }
+
+            trials.push({
+                id: i + 1,
+                refAudio: audioSamples[idxA],
+                testAudio: audioSamples[idxB],
+                description: `Para ${i + 1}`
+            });
+        }
+        return trials;
+    }
+
+    function startTest(event) {
+        event.preventDefault();
+        patientData = {
+            id: document.getElementById('patient-id').value,
+            age: document.getElementById('patient-age').value,
+            hearing: document.getElementById('patient-hearing').value,
+            musicalEducation: document.getElementById('patient-music').value
+        };
+
+        // Wygeneruj losowy zestaw pytań dla tego badanego
+        testTrials = generateRandomTrials(NUMBER_OF_QUESTIONS);
+
+        document.getElementById('step-patient').classList.add('hidden');
+        document.getElementById('step-test').classList.remove('hidden');
+
+        loadTrial();
+    }
+
+    function loadTrial() {
+        const container = document.getElementById('question-container');
+        const trial = testTrials[currentTrialIndex];
+
+        container.innerHTML = `
+            <h3>Próba ${currentTrialIndex + 1} z ${testTrials.length}</h3>
+            <p><strong>${trial.description}:</strong></p>
+            
+            <div class="audio-player-box">
+                <p>Odsłuchaj próbki (możesz odtwarzać je wielokrotnie):</p>
+                <div style="margin-bottom: 10px;">
+                    <label>Próbka Referencyjna (A):</label>
+                    <audio controls src="${trial.refAudio}" style="width:100%;"></audio>
+                </div>
+                <div>
+                    <label>Próbka Testowa (B):</label>
+                    <audio controls src="${trial.testAudio}" style="width:100%;"></audio>
+                </div>
+            </div>
+
+            <p><strong>Oceń jakość próbki testowej (B) w porównaniu do referencyjnej (A):</strong></p>
+            <div class="scale-options">
+                <label class="scale-option"><input type="radio" name="ccr_score" value="3" required> 3 - Much better (Znacznie lepsza)</label>
+                <label class="scale-option"><input type="radio" name="ccr_score" value="2"> 2 - Better (Lepsza)</label>
+                <label class="scale-option"><input type="radio" name="ccr_score" value="1"> 1 - Slightly better (Nieco lepsza)</label>
+                <label class="scale-option"><input type="radio" name="ccr_score" value="0"> 0 - About the same (Bez zmian / taka sama)</label>
+                <label class="scale-option"><input type="radio" name="ccr_score" value="-1"> -1 - Slightly worse (Nieco gorsza)</label>
+                <label class="scale-option"><input type="radio" name="ccr_score" value="-2"> -2 - Worse (Gorsza)</label>
+                <label class="scale-option"><input type="radio" name="ccr_score" value="-3"> -3 - Much worse (Znacznie gorsza)</label>
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="nextTrial()">${currentTrialIndex === testTrials.length - 1 ? 'Zakończ i Wyślij Wyniki' : 'Następna Próba'}</button>
+            </div>
+        `;
+    }
+
+    function nextTrial() {
+        const selectedOption = document.querySelector('input[name="ccr_score"]:checked');
+        if (!selectedOption) {
+            alert("Proszę wybrać ocenę na skali CCR przed przejściem dalej.");
+            return;
+        }
+
+        userAnswers[`trial_${currentTrialIndex + 1}`] = {
+            ref: testTrials[currentTrialIndex].refAudio,
+            test: testTrials[currentTrialIndex].testAudio,
+            score: parseInt(selectedOption.value)
+        };
+
+        currentTrialIndex++;
+
+        if (currentTrialIndex < testTrials.length) {
+            loadTrial();
+        } else {
+            finishTest();
+        }
+    }
+
+    async function finishTest() {
+        const finalResult = {
+            patient: patientData,
+            timestamp: new Date().toISOString(),
+            results: userAnswers
+        };
+
+        const container = document.getElementById('question-container');
+        container.innerHTML = `<h2>Wysyłanie wyników...</h2><p>Proszę chwilę poczekać.</p>`;
+
+        let statusHtml = "";
+
+        try {
+            const response = await fetch(ENDPOINT_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify(finalResult)
+            });
+
+            const resultData = await response.json();
+
+            if (response.ok && resultData.status === "success") {
+                statusHtml = `<div class="status-msg status-ok">Wyniki zostały automatycznie zapisane.</div>`;
+            } else {
+                throw new Error(resultData.message || "Błąd zapisu w arkuszu");
+            }
+        } catch (error) {
+            console.error("Szczegóły błędu:", error);
+            statusHtml = `<div class="status-msg status-err">Nie udało się zapisać wyników automatycznie. Pobierz plik JSON poniżej i prześlij go badaczowi.</div>`;
+        }
+
+        const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(finalResult, null, 2));
+        
+        container.innerHTML = `
+            <h2>Test zakończony!</h2>
+            <p>Dziękujemy za udział w badaniu.</p>
+            ${statusHtml}
+            <a href="${jsonStr}" download="wyniki_ccr_${patientData.id}.json">
+                <button type="button" style="background-color: #27ae60;">Pobierz kopię wyników (JSON)</button>
+            </a>
+        `;
+    }
+</script>
+
+</body>
+</html>
