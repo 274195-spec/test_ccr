@@ -12,6 +12,10 @@
             margin: 0;
             padding: 20px;
         }
+        input, select, button {
+            font-family: inherit;
+            font-size: inherit;
+        }
         .container {
             max-width: 700px;
             margin: 0 auto;
@@ -24,6 +28,18 @@
             color: #2c3e50;
             border-bottom: 2px solid #ecf0f1;
             padding-bottom: 10px;
+        }
+        .welcome-box {
+            background: #f8f9fa;
+            padding: 16px;
+            border-left: 4px solid #3498db;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .welcome-box h3 {
+            margin-top: 0;
+            color: #2c3e50;
         }
         .form-group {
             margin-bottom: 15px;
@@ -39,6 +55,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            background-color: #fff;
         }
         button {
             background-color: #3498db;
@@ -64,26 +81,34 @@
             border-radius: 6px;
             margin-bottom: 20px;
         }
-        .scale-options {
+        .attribute-block {
+            margin: 18px 0;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .scale-radios {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+        .scale-radios label {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .scale-option {
-            display: flex;
             align-items: center;
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 10px 15px;
-            border-radius: 4px;
             cursor: pointer;
-        }
-        .scale-option:hover {
-            background-color: #f1f8ff;
-        }
-        .scale-option input {
-            margin-right: 15px;
+            font-size: 0.9em;
+            font-weight: normal;
+            margin-bottom: 0;
         }
         .nav-buttons {
             display: flex;
@@ -100,19 +125,20 @@
     </style>
 </head>
 <body>
-    <div id="welcome-text" style="background: #f8f9fa; padding: 16px; border-left: 4px solid #007bff; border-radius: 6px; margin-bottom: 20px; line-height: 1.5;">
-    <h3 style="margin-top: 0;">Test CCR</h3>
-    <p>
-        Tutaj wpiszesz krótki opis celu badania, informację o porównywaniu próbek brzmienia przetworników gitarowych oraz przybliżony czas trwania testu.
-    </p>
-    <p style="margin-bottom: 0;">
-        Zalecamy wykonanie testu w słuchawkach, w cichym otoczeniu. Przed rozpoczęciem wypełnij krótką metryczkę poniżej.
-    </p>
-</div>
 
 <div class="container">
-    <!-- INFORMACJE O PACJENCIE / BADANYM -->
+    <!-- EKRAN POWITALNY I METRYCZKA -->
     <div id="step-patient">
+        <div id="welcome-text" class="welcome-box">
+            <h3>Test odsłuchowy przetworników gitarowych</h3>
+            <p>
+                Tutaj wpiszesz krótki opis celu badania, informację o porównywaniu próbek brzmienia przetworników gitarowych oraz przybliżony czas trwania testu.
+            </p>
+            <p style="margin-bottom: 0;">
+                Zalecamy wykonanie testu w słuchawkach, w cichym otoczeniu. Przed rozpoczęciem wypełnij krótką metryczkę poniżej.
+            </p>
+        </div>
+
         <h2>Informacje o badanym</h2>
         <form id="patient-form" onsubmit="startTest(event)">
             <div class="form-group">
@@ -132,7 +158,6 @@
                     <option value="nieznany">Nieznany</option>
                 </select>
             </div>
-            <!-- WYKSZTAŁCENIE MUZYCZNE -->
             <div class="form-group">
                 <label for="patient-music">Wykształcenie / doświadczenie muzyczne:</label>
                 <select id="patient-music" required>
@@ -144,25 +169,25 @@
                     <option value="wyzsze">Wyższe muzyczne / zawodowy muzyk / realizator dźwięku</option>
                 </select>
             </div>
-            <div style="margin-bottom: 15px;">
-    <label for="guitar-experience"><strong>Doświadczenie z grą na gitarze elektrycznej:</strong></label><br>
-    <select id="guitar-experience" required style="width: 100%; padding: 8px; margin-top: 5px;">
-        <option value="" disabled selected>Wybierz opcję...</option>
-        <option value="Brak">Brak doświadczenia</option>
-        <option value="Poniżej 1 roku">Poniżej 1 roku</option>
-        <option value="1-3 lata">1–3 lata</option>
-        <option value="3-5 lat">3–5 lat</option>
-        <option value="Powyżej 5 lat">Powyżej 5 lat</option>
-    </select>
-</div>
+            <div class="form-group">
+                <label for="guitar-experience">Doświadczenie z grą na gitarze elektrycznej:</label>
+                <select id="guitar-experience" required>
+                    <option value="">-- Wybierz --</option>
+                    <option value="Brak">Brak doświadczenia</option>
+                    <option value="Poniżej 1 roku">Poniżej 1 roku</option>
+                    <option value="1-3 lata">1–3 lata</option>
+                    <option value="3-5 lat">3–5 lat</option>
+                    <option value="Powyżej 5 lat">Powyżej 5 lat</option>
+                </select>
+            </div>
             <button type="submit">Rozpocznij Test</button>
         </form>
     </div>
 
-    <!-- WŁAŚCIWY TEST CCR -->
+    <!-- WŁAŚCIWY TEST -->
     <div id="step-test" class="hidden">
-        <h2>Test CCR (Comparison Category Rating)</h2>
-        <p>Przesłuchaj próbkę referencyjną oraz testową, a następnie oceń jakość próbki testowej względem referencji.</p>
+        <h2>Porównanie brzmienia próbek</h2>
+        <p>Przesłuchaj próbkę A oraz próbkę B, a następnie porównaj ich cechy brzmieniowe na poniższych skalach.</p>
         
         <div id="question-container"></div>
     </div>
@@ -170,13 +195,15 @@
 
 <script>
     const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxFbUdGtjMDefrcS67lG9P0_a5M5hbdXJREQ9lCQrWlh7hIc6VzZupd8jhquTjlL58/exec";
-    const NUMBER_OF_QUESTIONS = 3;
+    const NUMBER_OF_QUESTIONS = 3; // Docelowo ustaw np. 10 lub 12
+
     const ATTRIBUTES = [
         { id: "jasnosc", label: "Jasność (góra pasma)", left: "A znacznie jaśniejsze", right: "B znacznie jaśniejsze" },
         { id: "klarownosc", label: "Klarowność / selektywność", left: "A znacznie klarowniejsze", right: "B znacznie klarowniejsze" },
         { id: "pelnia", label: "Pełnia / dół pasma", left: "A znacznie pełniejsze", right: "B znacznie pełniejsze" },
         { id: "preferencja", label: "Ogólna preferencja", left: "Zdecydowanie wolę A", right: "Zdecydowanie wolę B" }
     ];
+
     const audioSamples = [
         "audio/sample_01.wav",
         "audio/sample_02.wav",
@@ -200,54 +227,80 @@
     let userAnswers = {};
     let testStartTime = null;
 
-    // Funkcja losująca unikalne pary (bez powtórzeń) z losową kolejnością A/B
     function generateRandomTrials(count) {
-    // 1. Utwórz wszystkie unikalne pary (A, B)
-    const allPairs = [];
-    for (let i = 0; i < audioSamples.length; i++) {
-        for (let j = i + 1; j < audioSamples.length; j++) {
-            allPairs.push([audioSamples[i], audioSamples[j]]);
+        const allPairs = [];
+        for (let i = 0; i < audioSamples.length; i++) {
+            for (let j = i + 1; j < audioSamples.length; j++) {
+                allPairs.push([audioSamples[i], audioSamples[j]]);
+            }
         }
+
+        for (let i = allPairs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allPairs[i], allPairs[j]] = [allPairs[j], allPairs[i]];
+        }
+
+        const selectedPairs = allPairs.slice(0, Math.min(count, allPairs.length));
+
+        return selectedPairs.map((pair, index) => {
+            const swap = Math.random() < 0.5;
+            return {
+                id: index + 1,
+                refAudio: swap ? pair[1] : pair[0],
+                testAudio: swap ? pair[0] : pair[1],
+                description: `Para ${index + 1}`
+            };
+        });
     }
-
-    // 2. Przetasuj pary (algorytm Fisher-Yates)
-    for (let i = allPairs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allPairs[i], allPairs[j]] = [allPairs[j], allPairs[i]];
-    }
-
-    // 3. Wybierz potrzebną liczbę par (nie więcej niż dostępna pula)
-    const selectedPairs = allPairs.slice(0, Math.min(count, allPairs.length));
-
-    // 4. Zbuduj pytania z losową kolejnością (A vs B lub B vs A)
-    return selectedPairs.map((pair, index) => {
-        const swap = Math.random() < 0.5;
-        return {
-            id: index + 1,
-            refAudio: swap ? pair[1] : pair[0],
-            testAudio: swap ? pair[0] : pair[1],
-            description: `Para ${index + 1}`
-        };
-    });
-}
 
     function startTest(event) {
         event.preventDefault();
         patientData = {
-            id: document.getElementById('patient-id').value,
+            id: document.getElementById('patient-id').value.trim(),
             age: document.getElementById('patient-age').value,
             hearing: document.getElementById('patient-hearing').value,
             musicalEducation: document.getElementById('patient-music').value,
-            guitarExperience: document.getElementById("guitar-experience").value
+            guitarExperience: document.getElementById('guitar-experience').value
         };
 
-        // Wygeneruj losowy zestaw pytań dla tego badanego
         testTrials = generateRandomTrials(NUMBER_OF_QUESTIONS);
 
         document.getElementById('step-patient').classList.add('hidden');
         document.getElementById('step-test').classList.remove('hidden');
         testStartTime = Date.now();
         loadTrial();
+    }
+
+    function renderAttributeQuestions() {
+        const container = document.getElementById("questions-container");
+        container.innerHTML = "";
+
+        const scaleValues = [-3, -2, -1, 0, 1, 2, 3];
+
+        ATTRIBUTES.forEach(attr => {
+            const block = document.createElement("div");
+            block.className = "attribute-block";
+
+            const radiosHtml = scaleValues.map(val => `
+                <label>
+                    <input type="radio" name="attr_${attr.id}" value="${val}">
+                    <span>${val > 0 ? "+" + val : val}</span>
+                </label>
+            `).join("");
+
+            block.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 8px;">${attr.label}</div>
+                <div class="scale-labels">
+                    <span>← ${attr.left}</span>
+                    <span>Takie same (0)</span>
+                    <span>${attr.right} →</span>
+                </div>
+                <div class="scale-radios">
+                    ${radiosHtml}
+                </div>
+            `;
+            container.appendChild(block);
+        });
     }
 
     function loadTrial() {
@@ -259,69 +312,43 @@
             <p><strong>${trial.description}:</strong></p>
             
             <div class="audio-player-box">
-                <p>Odsłuchaj próbki (możesz odtwarzać je wielokrotnie):</p>
+                <p style="margin-top: 0;">Odsłuchaj próbki (możesz odtwarzać je wielokrotnie):</p>
                 <div style="margin-bottom: 10px;">
-                    <label>Próbka Referencyjna (A):</label>
+                    <label>Próbka A:</label>
                     <audio controls src="${trial.refAudio}" style="width:100%;"></audio>
                 </div>
                 <div>
-                    <label>Próbka Testowa (B):</label>
+                    <label>Próbka B:</label>
                     <audio controls src="${trial.testAudio}" style="width:100%;"></audio>
                 </div>
             </div>
 
-            <p><strong>Oceń jakość próbki testowej (B) w porównaniu do referencyjnej (A):</strong></p>
             <div id="questions-container"></div>
 
             <div class="nav-buttons">
-                <button onclick="nextTrial()">${currentTrialIndex === testTrials.length - 1 ? 'Zakończ i Wyślij Wyniki' : 'Następna Próba'}</button>
+                <button type="button" onclick="nextTrial()">${currentTrialIndex === testTrials.length - 1 ? 'Zakończ i Wyślij Wyniki' : 'Następna Próba'}</button>
             </div>
         `;
-    function renderAttributeQuestions() {
-    const container = document.getElementById("questions-container");
-    container.innerHTML = "";
 
-    const scaleValues = [-3, -2, -1, 0, 1, 2, 3];
-
-    ATTRIBUTES.forEach(attr => {
-        const block = document.createElement("div");
-        block.className = "attribute-block";
-        block.style.cssText = "margin: 18px 0; padding: 12px; border: 1px solid #ddd; border-radius: 8px;";
-
-        let radiosHtml = scaleValues.map(val => `
-            <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; font-size: 0.9em;">
-                <input type="radio" name="attr_${attr.id}" value="${val}">
-                <span>${val > 0 ? "+" + val : val}</span>
-            </label>
-        `).join("");
-
-        block.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 8px;">${attr.label}</div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #555; margin-bottom: 6px;">
-                <span>← ${attr.left}</span>
-                <span>Takie same (0)</span>
-                <span>${attr.right} →</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 10px;">
-                ${radiosHtml}
-            </div>
-        `;
-        container.appendChild(block);
-    });
-    }
+        renderAttributeQuestions();
     }
 
     function nextTrial() {
-        const selectedOption = document.querySelector('input[name="ccr_score"]:checked');
-        if (!selectedOption) {
-            alert("Proszę wybrać ocenę na skali CCR przed przejściem dalej.");
-            return;
+        const trialScores = {};
+        for (const attr of ATTRIBUTES) {
+            const selected = document.querySelector(`input[name="attr_${attr.id}"]:checked`);
+            if (!selected) {
+                alert(`Zaznacz odpowiedź dla cechy: ${attr.label}`);
+                return;
+            }
+            trialScores[attr.id] = parseInt(selected.value, 10);
         }
 
+        const currentTrial = testTrials[currentTrialIndex];
         userAnswers[`trial_${currentTrialIndex + 1}`] = {
-            ref: testTrials[currentTrialIndex].refAudio,
-            test: testTrials[currentTrialIndex].testAudio,
-            score: parseInt(selectedOption.value)
+            ref: currentTrial.refAudio,
+            test: currentTrial.testAudio,
+            scores: trialScores
         };
 
         currentTrialIndex++;
@@ -331,34 +358,18 @@
         } else {
             finishTest();
         }
-        const trialScores = {};
-for (const attr of ATTRIBUTES) {
-    const selected = document.querySelector(`input[name="attr_${attr.id}"]:checked`);
-    if (!selected) {
-        alert(`Zaznacz odpowiedź dla cechy: ${attr.label}`);
-        return;
-    }
-    trialScores[attr.id] = parseInt(selected.value, 10);
-}
-
-const currentTrial = testTrials[currentTrialIndex];
-userAnswers[`trial_${currentTrialIndex + 1}`] = {
-    ref: currentTrial.refAudio,
-    test: currentTrial.testAudio,
-    scores: trialScores
-    };
     }
 
     async function finishTest() {
         const durationSeconds = Math.round((Date.now() - testStartTime) / 1000);
 
-const finalResult = {
-    patient: patientData,
-    timestamp: new Date().toISOString(),
-    durationSeconds: durationSeconds,
-    attributes: ATTRIBUTES.map(a => ({ id: a.id, label: a.label })),
-    results: userAnswers
-};
+        const finalResult = {
+            patient: patientData,
+            timestamp: new Date().toISOString(),
+            durationSeconds: durationSeconds,
+            attributes: ATTRIBUTES.map(a => ({ id: a.id, label: a.label })),
+            results: userAnswers
+        };
 
         const container = document.getElementById('question-container');
         container.innerHTML = `<h2>Wysyłanie wyników...</h2><p>Proszę chwilę poczekać.</p>`;
