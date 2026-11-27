@@ -191,15 +191,15 @@
     <!-- EKRAN POWITALNY I METRYCZKA -->
     <div id="step-patient">
         <div id="welcome-text" class="welcome-box">
-            <h3>Test odsłuchowy przetworników gitarowych</h3>
+            <h3>Test odsłuchowy CCR przetworników gitarowych</h3>
             <p>
-                Tutaj wpiszesz krótki opis celu badania oraz informację o porównywaniu próbek brzmienia przetworników gitarowych.
+                Celem niniejszego testu jest zbadanie subiektywnego postrzegania wybranych atrybutów brzmienia przetworników stosowanych w gitarach elektrycznych.
             </p>
             <p>
-                <strong>Czas trwania i przerwa:</strong> Test składa się z 91 par nagrań i zajmuje około 40–50 minut. Dla zachowania świeżości słuchu zalecamy zrobienie krótkiej, 5-minutowej przerwy w połowie testu (nie zamykaj w tym czasie karty przeglądarki).
+                <strong>Czas trwania i przerwa:</strong> Test składa się z 91 par nagrań i zajmuje około 40–50 minut. Dla zachowania świeżości słuchu zalecam zrobienie krótkiej, 5-minutowej przerwy w połowie testu (nie zamykaj w tym czasie karty przeglądarki).
             </p>
             <p style="margin-bottom: 0;">
-                Zalecamy wykonanie testu w słuchawkach, w cichym otoczeniu. Przed rozpoczęciem wypełnij krótką metryczkę poniżej.
+                Zalecam wykonanie testu w słuchawkach, w cichym otoczeniu. Przed rozpoczęciem wypełnij krótką metryczkę poniżej.
             </p>
         </div>
 
@@ -207,7 +207,7 @@
         <form id="patient-form" onsubmit="startTest(event)">
             <div class="form-group">
                 <label for="patient-id">ID / Inicjały badanego:</label>
-                <input type="text" id="patient-id" required placeholder="np. PACJENT_01">
+                <input type="text" id="patient-id" required placeholder="np. Jan Kowalski">
             </div>
             <div class="form-group">
                 <label for="patient-age">Wiek:</label>
@@ -520,7 +520,7 @@
         };
 
         const container = document.getElementById('question-container');
-        container.innerHTML = `<h2>Wysyłanie wyników...</h2><p>Proszę chwilę poczekać.</p>`;
+        container.innerHTML = `<h2>Wysyłanie wyników...</h2>`;
 
         let statusHtml = "";
 
@@ -543,14 +543,14 @@
             }
         } catch (error) {
             console.error("Szczegóły błędu:", error);
-            statusHtml = `<div class="status-msg status-err">Nie udało się zapisać wyników automatycznie. Pobierz plik JSON poniżej i prześlij go badaczowi.</div>`;
+            statusHtml = `<div class="status-msg status-err">Nie udało się zapisać wyników automatycznie. Proszę o przesłanie wyników na skrzynkę mailową.</div>`;
         }
 
         const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(finalResult, null, 2));
         
         container.innerHTML = `
             <h2>Test zakończony!</h2>
-            <p>Dziękujemy za udział w badaniu.</p>
+            <p>Dziękuję za udział w badaniu.</p>
             ${statusHtml}
             <a href="${jsonStr}" download="wyniki_ccr_${patientData.id}.json">
                 <button type="button" style="background-color: #27ae60;">Pobierz kopię wyników (JSON)</button>
