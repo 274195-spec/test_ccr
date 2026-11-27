@@ -100,9 +100,18 @@
     </style>
 </head>
 <body>
+    <div id="welcome-text" style="background: #f8f9fa; padding: 16px; border-left: 4px solid #007bff; border-radius: 6px; margin-bottom: 20px; line-height: 1.5;">
+    <h3 style="margin-top: 0;">Test CCR</h3>
+    <p>
+        Tutaj wpiszesz krótki opis celu badania, informację o porównywaniu próbek brzmienia przetworników gitarowych oraz przybliżony czas trwania testu.
+    </p>
+    <p style="margin-bottom: 0;">
+        Zalecamy wykonanie testu w słuchawkach, w cichym otoczeniu. Przed rozpoczęciem wypełnij krótką metryczkę poniżej.
+    </p>
+</div>
 
 <div class="container">
-    <!-- KROK 1: INFORMACJE O PACJENCIE / BADANYM -->
+    <!-- INFORMACJE O PACJENCIE / BADANYM -->
     <div id="step-patient">
         <h2>Informacje o badanym</h2>
         <form id="patient-form" onsubmit="startTest(event)">
@@ -123,7 +132,7 @@
                     <option value="nieznany">Nieznany</option>
                 </select>
             </div>
-            <!-- NOWE POLE: WYKSZTAŁCENIE MUZYCZNE -->
+            <!-- WYKSZTAŁCENIE MUZYCZNE -->
             <div class="form-group">
                 <label for="patient-music">Wykształcenie / doświadczenie muzyczne:</label>
                 <select id="patient-music" required>
@@ -135,11 +144,22 @@
                     <option value="wyzsze">Wyższe muzyczne / zawodowy muzyk / realizator dźwięku</option>
                 </select>
             </div>
+            <div style="margin-bottom: 15px;">
+    <label for="guitar-experience"><strong>Doświadczenie z grą na gitarze elektrycznej:</strong></label><br>
+    <select id="guitar-experience" required style="width: 100%; padding: 8px; margin-top: 5px;">
+        <option value="" disabled selected>Wybierz opcję...</option>
+        <option value="Brak">Brak doświadczenia</option>
+        <option value="Poniżej 1 roku">Poniżej 1 roku</option>
+        <option value="1-3 lata">1–3 lata</option>
+        <option value="3-5 lat">3–5 lat</option>
+        <option value="Powyżej 5 lat">Powyżej 5 lat</option>
+    </select>
+</div>
             <button type="submit">Rozpocznij Test</button>
         </form>
     </div>
 
-    <!-- KROK 2: WŁAŚCIWY TEST CCR -->
+    <!-- WŁAŚCIWY TEST CCR -->
     <div id="step-test" class="hidden">
         <h2>Test CCR (Comparison Category Rating)</h2>
         <p>Przesłuchaj próbkę referencyjną oraz testową, a następnie oceń jakość próbki testowej względem referencji.</p>
@@ -149,19 +169,14 @@
 </div>
 
 <script>
-    // =========================================================================
-    // 1. KONFIGURACJA WYSYŁKI (LINK Z GOOGLE APPS SCRIPT)
-    // =========================================================================
     const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxFbUdGtjMDefrcS67lG9P0_a5M5hbdXJREQ9lCQrWlh7hIc6VzZupd8jhquTjlL58/exec";
-
-    // =========================================================================
-    // 2. LICZBA PYTAŃ (PAR) W TEŚCIE  <--- TUTAJ ZMIENIASZ LICZBĘ PYTAŃ
-    // =========================================================================
     const NUMBER_OF_QUESTIONS = 3;
-
-    // =========================================================================
-    // 3. BAZA 14 POJEDYNCZYCH PRÓBEK DŹWIĘKOWYCH
-    // =========================================================================
+    const ATTRIBUTES = [
+        { id: "jasnosc", label: "Jasność (góra pasma)", left: "A znacznie jaśniejsze", right: "B znacznie jaśniejsze" },
+        { id: "klarownosc", label: "Klarowność / selektywność", left: "A znacznie klarowniejsze", right: "B znacznie klarowniejsze" },
+        { id: "pelnia", label: "Pełnia / dół pasma", left: "A znacznie pełniejsze", right: "B znacznie pełniejsze" },
+        { id: "preferencja", label: "Ogólna preferencja", left: "Zdecydowanie wolę A", right: "Zdecydowanie wolę B" }
+    ];
     const audioSamples = [
         "audio/sample_01.wav",
         "audio/sample_02.wav",
@@ -186,7 +201,7 @@
     let testStartTime = null;
 
     // Funkcja losująca unikalne pary (bez powtórzeń) z losową kolejnością A/B
-function generateRandomTrials(count) {
+    function generateRandomTrials(count) {
     // 1. Utwórz wszystkie unikalne pary (A, B)
     const allPairs = [];
     for (let i = 0; i < audioSamples.length; i++) {
@@ -222,7 +237,8 @@ function generateRandomTrials(count) {
             id: document.getElementById('patient-id').value,
             age: document.getElementById('patient-age').value,
             hearing: document.getElementById('patient-hearing').value,
-            musicalEducation: document.getElementById('patient-music').value
+            musicalEducation: document.getElementById('patient-music').value,
+            guitarExperience: document.getElementById("guitar-experience").value
         };
 
         // Wygeneruj losowy zestaw pytań dla tego badanego
@@ -255,20 +271,44 @@ function generateRandomTrials(count) {
             </div>
 
             <p><strong>Oceń jakość próbki testowej (B) w porównaniu do referencyjnej (A):</strong></p>
-            <div class="scale-options">
-                <label class="scale-option"><input type="radio" name="ccr_score" value="3" required> 3 - Much better (Znacznie lepsza)</label>
-                <label class="scale-option"><input type="radio" name="ccr_score" value="2"> 2 - Better (Lepsza)</label>
-                <label class="scale-option"><input type="radio" name="ccr_score" value="1"> 1 - Slightly better (Nieco lepsza)</label>
-                <label class="scale-option"><input type="radio" name="ccr_score" value="0"> 0 - About the same (Bez zmian / taka sama)</label>
-                <label class="scale-option"><input type="radio" name="ccr_score" value="-1"> -1 - Slightly worse (Nieco gorsza)</label>
-                <label class="scale-option"><input type="radio" name="ccr_score" value="-2"> -2 - Worse (Gorsza)</label>
-                <label class="scale-option"><input type="radio" name="ccr_score" value="-3"> -3 - Much worse (Znacznie gorsza)</label>
-            </div>
+            <div id="questions-container"></div>
 
             <div class="nav-buttons">
                 <button onclick="nextTrial()">${currentTrialIndex === testTrials.length - 1 ? 'Zakończ i Wyślij Wyniki' : 'Następna Próba'}</button>
             </div>
         `;
+    function renderAttributeQuestions() {
+    const container = document.getElementById("questions-container");
+    container.innerHTML = "";
+
+    const scaleValues = [-3, -2, -1, 0, 1, 2, 3];
+
+    ATTRIBUTES.forEach(attr => {
+        const block = document.createElement("div");
+        block.className = "attribute-block";
+        block.style.cssText = "margin: 18px 0; padding: 12px; border: 1px solid #ddd; border-radius: 8px;";
+
+        let radiosHtml = scaleValues.map(val => `
+            <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; font-size: 0.9em;">
+                <input type="radio" name="attr_${attr.id}" value="${val}">
+                <span>${val > 0 ? "+" + val : val}</span>
+            </label>
+        `).join("");
+
+        block.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 8px;">${attr.label}</div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #555; margin-bottom: 6px;">
+                <span>← ${attr.left}</span>
+                <span>Takie same (0)</span>
+                <span>${attr.right} →</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 10px;">
+                ${radiosHtml}
+            </div>
+        `;
+        container.appendChild(block);
+    });
+    }
     }
 
     function nextTrial() {
@@ -291,6 +331,22 @@ function generateRandomTrials(count) {
         } else {
             finishTest();
         }
+        const trialScores = {};
+for (const attr of ATTRIBUTES) {
+    const selected = document.querySelector(`input[name="attr_${attr.id}"]:checked`);
+    if (!selected) {
+        alert(`Zaznacz odpowiedź dla cechy: ${attr.label}`);
+        return;
+    }
+    trialScores[attr.id] = parseInt(selected.value, 10);
+}
+
+const currentTrial = testTrials[currentTrialIndex];
+userAnswers[`trial_${currentTrialIndex + 1}`] = {
+    ref: currentTrial.refAudio,
+    test: currentTrial.testAudio,
+    scores: trialScores
+    };
     }
 
     async function finishTest() {
@@ -300,6 +356,7 @@ const finalResult = {
     patient: patientData,
     timestamp: new Date().toISOString(),
     durationSeconds: durationSeconds,
+    attributes: ATTRIBUTES.map(a => ({ id: a.id, label: a.label })),
     results: userAnswers
 };
 
