@@ -67,13 +67,44 @@
             font-size: 16px;
             width: 100%;
             margin-top: 15px;
+            transition: background-color 0.2s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
         }
         .hidden {
             display: none;
         }
+        /* Pasek postępu */
+        .progress-wrapper {
+            margin-bottom: 20px;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        /* Odtwarzacze i status odsłuchu */
         .audio-player-box {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -81,6 +112,36 @@
             border-radius: 6px;
             margin-bottom: 20px;
         }
+        .audio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .audio-header label {
+            margin-bottom: 0;
+        }
+        .badge {
+            font-size: 0.8em;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .badge-done {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .lock-hint {
+            text-align: center;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 8px;
+        }
+        /* Skale ocen */
         .attribute-block {
             margin: 18px 0;
             padding: 14px;
@@ -112,7 +173,7 @@
         }
         .nav-buttons {
             display: flex;
-            gap: 10px;
+            flex-direction: column;
         }
         .status-msg {
             padding: 12px;
@@ -132,7 +193,10 @@
         <div id="welcome-text" class="welcome-box">
             <h3>Test odsłuchowy przetworników gitarowych</h3>
             <p>
-                Tutaj wpiszesz krótki opis celu badania, informację o porównywaniu próbek brzmienia przetworników gitarowych oraz przybliżony czas trwania testu.
+                Tutaj wpiszesz krótki opis celu badania oraz informację o porównywaniu próbek brzmienia przetworników gitarowych.
+            </p>
+            <p>
+                <strong>Czas trwania i przerwa:</strong> Test składa się z 91 par nagrań i zajmuje około 40–50 minut. Dla zachowania świeżości słuchu zalecamy zrobienie krótkiej, 5-minutowej przerwy w połowie testu (nie zamykaj w tym czasie karty przeglądarki).
             </p>
             <p style="margin-bottom: 0;">
                 Zalecamy wykonanie testu w słuchawkach, w cichym otoczeniu. Przed rozpoczęciem wypełnij krótką metryczkę poniżej.
@@ -187,7 +251,18 @@
     <!-- WŁAŚCIWY TEST -->
     <div id="step-test" class="hidden">
         <h2>Porównanie brzmienia próbek</h2>
-        <p>Przesłuchaj próbkę A oraz próbkę B, a następnie porównaj ich cechy brzmieniowe na poniższych skalach.</p>
+
+        <div class="progress-wrapper">
+            <div class="progress-info">
+                <span id="progress-text">Próba 1 z 91</span>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="progress-bar-fill" class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <p>Przesłuchaj próbkę A oraz próbkę B w całości, a następnie porównaj ich cechy brzmieniowe na poniższych skalach.</p>
         
         <div id="question-container"></div>
     </div>
@@ -195,7 +270,7 @@
 
 <script>
     const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxFbUdGtjMDefrcS67lG9P0_a5M5hbdXJREQ9lCQrWlh7hIc6VzZupd8jhquTjlL58/exec";
-    const NUMBER_OF_QUESTIONS = 3; // Docelowo ustaw np. 10 lub 12
+    const NUMBER_OF_QUESTIONS = 3; // Przed wysyłką do badanych zmień na 91
 
     const ATTRIBUTES = [
         { id: "jasnosc", label: "Jasność (góra pasma)", left: "A znacznie jaśniejsze", right: "B znacznie jaśniejsze" },
@@ -226,6 +301,8 @@
     let patientData = {};
     let userAnswers = {};
     let testStartTime = null;
+    let listenedA = false;
+    let listenedB = false;
 
     function generateRandomTrials(count) {
         const allPairs = [];
@@ -271,6 +348,30 @@
         loadTrial();
     }
 
+    function updateProgressBar() {
+        const total = testTrials.length;
+        const current = currentTrialIndex + 1;
+        const percent = Math.round((currentTrialIndex / total) * 100);
+
+        document.getElementById('progress-text').textContent = `Próba ${current} z ${total}`;
+        document.getElementById('progress-percent').textContent = `${percent}%`;
+        document.getElementById('progress-bar-fill').style.width = `${percent}%`;
+    }
+
+    function checkNextButtonUnlock() {
+        const nextBtn = document.getElementById('next-trial-btn');
+        const hint = document.getElementById('lock-hint');
+        if (!nextBtn) return;
+
+        if (listenedA && listenedB) {
+            nextBtn.disabled = false;
+            if (hint) hint.style.display = "none";
+        } else {
+            nextBtn.disabled = true;
+            if (hint) hint.style.display = "block";
+        }
+    }
+
     function renderAttributeQuestions() {
         const container = document.getElementById("questions-container");
         container.innerHTML = "";
@@ -304,36 +405,81 @@
     }
 
     function loadTrial() {
+        listenedA = false;
+        listenedB = false;
+        updateProgressBar();
+
         const container = document.getElementById('question-container');
         const trial = testTrials[currentTrialIndex];
 
         container.innerHTML = `
-            <h3>Próba ${currentTrialIndex + 1} z ${testTrials.length}</h3>
-            <p><strong>${trial.description}:</strong></p>
-            
             <div class="audio-player-box">
                 <p style="margin-top: 0;">Odsłuchaj próbki (możesz odtwarzać je wielokrotnie):</p>
-                <div style="margin-bottom: 10px;">
-                    <label>Próbka A:</label>
-                    <audio controls src="${trial.refAudio}" style="width:100%;"></audio>
+                <div style="margin-bottom: 12px;">
+                    <div class="audio-header">
+                        <label>Próbka A:</label>
+                        <span id="badge-a" class="badge badge-pending">Do odsłuchania</span>
+                    </div>
+                    <audio id="audio-a" controls src="${trial.refAudio}" style="width:100%;"></audio>
                 </div>
                 <div>
-                    <label>Próbka B:</label>
-                    <audio controls src="${trial.testAudio}" style="width:100%;"></audio>
+                    <div class="audio-header">
+                        <label>Próbka B:</label>
+                        <span id="badge-b" class="badge badge-pending">Do odsłuchania</span>
+                    </div>
+                    <audio id="audio-b" controls src="${trial.testAudio}" style="width:100%;"></audio>
                 </div>
             </div>
 
             <div id="questions-container"></div>
 
             <div class="nav-buttons">
-                <button type="button" onclick="nextTrial()">${currentTrialIndex === testTrials.length - 1 ? 'Zakończ i Wyślij Wyniki' : 'Następna Próba'}</button>
+                <button id="next-trial-btn" type="button" onclick="nextTrial()" disabled>
+                    ${currentTrialIndex === testTrials.length - 1 ? 'Zakończ i Wyślij Wyniki' : 'Następna Próba'}
+                </button>
+                <div id="lock-hint" class="lock-hint">
+                    Odsłuchaj obie próbki (A i B) do końca, aby przejść dalej.
+                </div>
             </div>
         `;
 
+        const audioA = document.getElementById('audio-a');
+        const audioB = document.getElementById('audio-b');
+        const badgeA = document.getElementById('badge-a');
+        const badgeB = document.getElementById('badge-b');
+
+        // Zapobiega nakładaniu się dźwięku obu próbek jednocześnie
+        audioA.addEventListener('play', () => {
+            if (!audioB.paused) audioB.pause();
+        });
+        audioB.addEventListener('play', () => {
+            if (!audioA.paused) audioA.pause();
+        });
+
+        // Odblokowanie po pełnym odsłuchaniu próbki
+        audioA.addEventListener('ended', () => {
+            listenedA = true;
+            badgeA.textContent = "Odsłuchano ✓";
+            badgeA.className = "badge badge-done";
+            checkNextButtonUnlock();
+        });
+        audioB.addEventListener('ended', () => {
+            listenedB = true;
+            badgeB.textContent = "Odsłuchano ✓";
+            badgeB.className = "badge badge-done";
+            checkNextButtonUnlock();
+        });
+
         renderAttributeQuestions();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function nextTrial() {
+        if (!listenedA || !listenedB) {
+            alert("Odsłuchaj obie próbki (A i B) do końca przed przejściem dalej.");
+            return;
+        }
+
         const trialScores = {};
         for (const attr of ATTRIBUTES) {
             const selected = document.querySelector(`input[name="attr_${attr.id}"]:checked`);
@@ -356,6 +502,8 @@
         if (currentTrialIndex < testTrials.length) {
             loadTrial();
         } else {
+            document.getElementById('progress-percent').textContent = "100%";
+            document.getElementById('progress-bar-fill').style.width = "100%";
             finishTest();
         }
     }
